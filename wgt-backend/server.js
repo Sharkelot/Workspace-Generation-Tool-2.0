@@ -16,6 +16,18 @@ app.get('/apikeys', async (req, res) => {
     }
 });
 
+app.get('/apikeys/:value', async (req, res) => {
+    const wildcardValue = req.params.value;
+
+    try {
+        const data = await pool.query('SELECT * FROM apikeys WHERE wsid = $1', [wildcardValue]);
+        res.status(200).send(data.rows);
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(500);
+    }
+});
+
 app.post('/apikeys', async (req, res) => {
     const { wsid, apikey } = req.body
     try {
