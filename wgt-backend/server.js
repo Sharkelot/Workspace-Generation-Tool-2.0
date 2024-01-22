@@ -30,7 +30,7 @@ app.post('/apikeys', async (req, res) => {
 app.get('/apisetup', async (req, res) => {
     try {
         await pool.query('CREATE TABLE apikeys( id SERIAL PRIMARY KEY, wsid VARCHAR(100), apikey VARCHAR(100))')
-        res.status(200).send({ message: "Successfully created table" })
+        res.status(200).send({ message: "Successfully created apikey table" })
     } catch (err) {
         console.log(err)
         res.sendStatus(500)
@@ -62,7 +62,7 @@ app.post('/listids', async (req, res) => {
 app.get('/listidsetup', async (req, res) => {
     try {
         await pool.query('CREATE TABLE listids( id SERIAL PRIMARY KEY, wsid VARCHAR(100), folderid VARCHAR(100), listid VARCHAR(100))')
-        res.status(200).send({ message: "Successfully created table" })
+        res.status(200).send({ message: "Successfully created list table" })
     } catch (err) {
         console.log(err)
         res.sendStatus(500)
@@ -94,7 +94,7 @@ app.post('/folderids', async (req, res) => {
 app.get('/folderidsetup', async (req, res) => {
     try {
         await pool.query('CREATE TABLE folderids( id SERIAL PRIMARY KEY, wsid VARCHAR(100), spaceid VARCHAR(100), folderid VARCHAR(100))')
-        res.status(200).send({ message: "Successfully created table" })
+        res.status(200).send({ message: "Successfully created folder table" })
     } catch (err) {
         console.log(err)
         res.sendStatus(500)
@@ -126,7 +126,7 @@ app.post('/spaceids', async (req, res) => {
 app.get('/spaceidsetup', async (req, res) => {
     try {
         await pool.query('CREATE TABLE spaceids( id SERIAL PRIMARY KEY, wsid VARCHAR(100), spaceid VARCHAR(100))')
-        res.status(200).send({ message: "Successfully created table" })
+        res.status(200).send({ message: "Successfully created space table" })
     } catch (err) {
         console.log(err)
         res.sendStatus(500)
@@ -147,9 +147,9 @@ app.get('/taskids', async (req, res) => {
 });
 
 app.post('/taskids', async (req, res) => {
-    const { wsid, listid, taskids } = req.body
+    const { wsid, listid, taskid } = req.body
     try {
-        await pool.query('INSERT INTO taskids (wsid, listid, taskids) VALUES ($1, $2, $3)', [wsid, listid, taskids])
+        await pool.query('INSERT INTO taskids (wsid, listid, taskid) VALUES ($1, $2, $3)', [wsid, listid, taskid])
         res.status(200).send({ message: "Successfully added child" })
     } catch (err) {
         console.log(err)
@@ -160,7 +160,7 @@ app.post('/taskids', async (req, res) => {
 app.get('/taskidsetup', async (req, res) => {
     try {
         await pool.query('CREATE TABLE taskids( id SERIAL PRIMARY KEY, wsid VARCHAR(100), listid VARCHAR(100), taskid VARCHAR(100))')
-        res.status(200).send({ message: "Successfully created table" })
+        res.status(200).send({ message: "Successfully created task table" })
     } catch (err) {
         console.log(err)
         res.sendStatus(500)

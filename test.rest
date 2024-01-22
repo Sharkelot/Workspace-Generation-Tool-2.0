@@ -57,3 +57,17 @@ Content-Type: application/json
 ####
 GET  http://localhost:13000/spaceidsetup
 ###
+###
+Get http://localhost:13000/taskids
+###
+POST http://localhost:13000/taskids
+Content-Type: application/json
+
+{
+    "wsid": "Corey S",
+    "listid": "112",
+    "taskid":"123"
+}
+####
+GET  http://localhost:13000/taskidsetup
+###
