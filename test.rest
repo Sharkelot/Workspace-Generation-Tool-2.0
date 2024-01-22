@@ -1,0 +1,59 @@
+//API KEY END POINTS
+###
+Get http://localhost:13000/apikeys
+###
+POST http://localhost:13000/apikeys
+Content-Type: application/json
+
+{
+    "wsid": "Corey S",
+    "apikey": "Mothership"
+}
+####
+GET  http://localhost:13000/apisetup
+###
+
+//LIST ID ENDPOINTS
+###
+Get http://localhost:13000/listids
+###
+POST http://localhost:13000/listids
+Content-Type: application/json
+
+{
+    "wsid": "Corey S",
+    "folderid": "112",
+    "listid":"123"
+}
+####
+GET  http://localhost:13000/listidsetup
+###
+// FOLDER ID ENDPOINTS
+###
+Get http://localhost:13000/folderids
+###
+POST http://localhost:13000/folderids
+Content-Type: application/json
+
+{
+    "wsid": "Corey S",
+    "spaceid": "112",
+    "folderid":"123"
+}
+####
+GET  http://localhost:13000/folderidsetup
+###
+// SPACE ID ENDPOINTS
+###
+Get http://localhost:13000/spaceids
+###
+POST http://localhost:13000/spaceids
+Content-Type: application/json
+
+{
+    "wsid": "Corey S",
+    "spaceid": "112"
+}
+####
+GET  http://localhost:13000/spaceidsetup
+###
