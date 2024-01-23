@@ -1,9 +1,11 @@
 const express = require('express');
+const axios = require('axios');
 const pool = require('./db');
 const port = 3000;
 
 const app = express();
 app.use(express.json());
+const clickUpBaseUrl = 'https://api.clickup.com/api/v2/';
 
 // api key routes
 app.get('/apikeys', async (req, res) => {
@@ -176,6 +178,29 @@ app.get('/taskidsetup', async (req, res) => {
     } catch (err) {
         console.log(err)
         res.sendStatus(500)
+    }
+});
+// ClickUp API Routes
+app.get('/clickup/spaces/:wsid', async (req, res) => {
+    const wildcardWsid = req.params.wsid;
+
+    try {
+        // Fetch API key from SQL database based on the wildcard wsid
+        const data = await pool.query('SELECT apikey FROM apikeys WHERE wsid = $1', [wildcardWsid]);
+        const apiKey = data.rows[0].apikey;
+
+        // Make ClickUp API request using the retrieved API key and wildcard wsid
+        const apiUrl = `${clickUpBaseUrl}team/${wildcardWsid}/space`;
+        const response = await axios.get(apiUrl, {
+            headers: {
+                'Authorization': apiKey,
+            },
+        });
+
+        res.status(200).send(response.data);
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(500);
     }
 });
 
