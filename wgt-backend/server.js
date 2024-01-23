@@ -180,7 +180,7 @@ app.get('/taskidsetup', async (req, res) => {
         res.sendStatus(500)
     }
 });
-// ClickUp API Routes
+// ClickUp Space API Routes
 app.get('/clickup/spaces/:wsid', async (req, res) => {
     const wildcardWsid = req.params.wsid;
 
@@ -307,6 +307,96 @@ app.post('/clickup/create-spaces', async (req, res) => {
         res.sendStatus(500);
     }
 });
+//Clickup Folder API Routes
+app.get('/clickup/folders/:spaceId/:wsid', async (req, res) => {
+    const { spaceId, wsid } = req.params;
+
+    try {
+        // Fetch API key from SQL database based on the wildcard wsid
+        const apiKeyData = await pool.query('SELECT apikey FROM apikeys WHERE wsid = $1', [wsid]);
+
+        // Check if apiKeyData.rows[0] is defined before accessing apikey property
+        if (apiKeyData.rows[0]) {
+            const apiKey = apiKeyData.rows[0].apikey;
+
+            // Make ClickUp API request to get folders for the specified space
+            const apiUrl = `${clickUpBaseUrl}space/${spaceId}/folder`; // Use spaceId in the URL
+            const response = await axios.get(apiUrl, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: apiKey,
+                },
+                params: {
+                    archived: false,
+                },
+            });
+
+            res.status(200).send(response.data);
+        } else {
+            // Handle case where apiKeyData.rows[0] is undefined
+            res.sendStatus(404);
+        }
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
+});
+app.post('/clickup/create-folders', async (req, res) => {
+    const { wsid, spaceId, count } = req.body; // Ensure spaceId and count are extracted correctly
+
+    try {
+        // Fetch API key from SQL database based on the wildcard spaceId
+        const apiKeyData = await pool.query('SELECT apikey FROM apikeys WHERE wsid = $1', [wsid]);
+
+        // Check if apiKeyData.rows[0] is defined before accessing apikey property
+        if (apiKeyData.rows[0]) {
+            const apiKey = apiKeyData.rows[0].apikey;
+
+            // Set up payload for creating multiple new folders
+            const foldersPayload = Array.from({ length: count }, (_, index) => ({
+                name: `New Folder ${index + 1}`, // Generate folder names
+            }));
+
+            // Create an array to store promises for each folder creation
+            const createFolderPromises = foldersPayload.map(async (folderPayload, index) => {
+                try {
+                    // Make ClickUp API request to create a new folder
+                    const apiUrl = `${clickUpBaseUrl}space/${spaceId}/folder`; // Use spaceId in the URL
+                    const response = await axios.post(apiUrl, folderPayload, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: apiKey,
+                        },
+                    });
+
+                    // Log the created folder response
+                    console.log(`Created Folder ${index + 1} - ClickUp API Response:`, response.data);
+
+                    // Return the folder data for further processing if needed
+                    return response.data;
+                } catch (error) {
+                    // Log and rethrow the error
+                    console.error(`Error creating Folder ${index + 1}:`, error.response?.data || error.message);
+                    throw error;
+                }
+            });
+
+            // Wait for all folder creation promises to resolve
+            const createdFolders = await Promise.all(createFolderPromises);
+
+            console.log(`Successfully created all ${createdFolders.length} folders.`);
+            res.status(200).send({ success: true, message: `Successfully created all ${createdFolders.length} folders.` });
+        } else {
+            // Handle case where apiKeyData.rows[0] is undefined
+            res.sendStatus(404);
+        }
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
+});
+
+
 
 
 

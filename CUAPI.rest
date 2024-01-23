@@ -9,3 +9,33 @@ Content-Type: application/json
     "wsid": "30967133"
 }
 ###
+POST http://localhost:13000/clickup/spaces
+Content-Type: application/json
+
+{
+    "wsid": "30967133"
+
+}
+
+###
+POST http://localhost:13000/clickup/create-spaces
+Content-Type: application/json
+
+{
+    "wsid": "30967133",
+    "count": 4
+
+}
+
+###
+GET  http://localhost:13000/clickup/folders/54908525/30967133
+###
+POST http://localhost:13000/clickup/create-folders
+Content-Type: application/json
+
+{
+    "wsid": "30967133",
+    "spaceId": "54908525",
+    "count": 5
+
+}
