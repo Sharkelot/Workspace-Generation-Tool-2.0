@@ -203,6 +203,110 @@ app.get('/clickup/spaces/:wsid', async (req, res) => {
         res.sendStatus(500);
     }
 });
+app.post('/clickup/spaces', async (req, res) => {
+    const { wsid } = req.body;
+
+    try {
+        // Fetch API key from SQL database based on the wildcard wsid
+        const apiKeyData = await pool.query('SELECT apikey FROM apikeys WHERE wsid = $1', [wsid]);
+
+        // Check if apiKeyData.rows[0] is defined before accessing apikey property
+        if (apiKeyData.rows[0]) {
+            const apiKey = apiKeyData.rows[0].apikey;
+
+            // Make ClickUp API request using the retrieved API key and wildcard wsid
+            const apiUrl = `${clickUpBaseUrl}team/${wsid}/space`;
+            const response = await axios.get(apiUrl, {
+                headers: {
+                    'Authorization': apiKey,
+                },
+            });
+
+            // Extract space IDs from the response
+            const spaceIds = response.data.spaces.map(space => space.id);
+
+            // Insert space IDs into spaceids table
+            await Promise.all(spaceIds.map(spaceId => {
+                return pool.query('INSERT INTO spaceids (wsid, spaceid) VALUES ($1, $2)', [wsid, spaceId]);
+            }));
+
+            res.status(200).send(response.data);
+        } else {
+            // Handle case where apiKeyData.rows[0] is undefined
+            res.sendStatus(404);
+        }
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(500);
+    }
+});
+// Route to create new spaces in ClickUp using the API key and a wildcard wsid
+app.post('/clickup/create-spaces', async (req, res) => {
+    const { wsid, features = {}, count } = req.body; // Ensure wsid is extracted correctly
+
+    try {
+        // Fetch API key from SQL database based on the wildcard wsid
+        const apiKeyData = await pool.query('SELECT apikey FROM apikeys WHERE wsid = $1', [wsid]);
+
+        // Check if apiKeyData.rows[0] is defined before accessing apikey property
+        if (apiKeyData.rows[0]) {
+            const apiKey = apiKeyData.rows[0].apikey;
+
+            // Set up payload for creating multiple new spaces
+            const spacesPayload = Array.from({ length: count }, (_, index) => ({
+                name: `Generated Space ${index + 1}`, // Generate space names
+                multiple_assignees: true,
+                features: {
+                    due_dates: true,
+                    time_tracking: features.time_tracking || false,
+                    tags: features.tags || false,
+                    time_estimates: features.time_estimates || false,
+                    checklists: features.checklists || false,
+                    custom_fields: features.custom_fields || false,
+                    remap_dependencies: features.remap_dependencies || false,
+                    dependency_warning: features.dependency_warning || false,
+                    portfolios: features.portfolios || false,
+                },
+            }));
+
+            // Create an array to store promises for each space creation
+            const createSpacePromises = spacesPayload.map(async (spacePayload, index) => {
+                try {
+                    // Make ClickUp API request to create a new space
+                    const apiUrl = `${clickUpBaseUrl}team/${wsid}/space`; // Use wsid in the URL
+                    const response = await axios.post(apiUrl, spacePayload, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: apiKey,
+                        },
+                    });
+
+                    // Log the created space response
+                    console.log(`Created Space ${index + 1} - ClickUp API Response:`, response.data);
+
+                    // Return the space data for further processing if needed
+                    return response.data;
+                } catch (error) {
+                    // Log and rethrow the error
+                    console.error(`Error creating Space ${index + 1}:`, error.response?.data || error.message);
+                    throw error;
+                }
+            });
+
+            // Wait for all space creation promises to resolve
+            const createdSpaces = await Promise.all(createSpacePromises);
+
+            console.log(`Successfully created all ${createdSpaces.length} spaces.`);
+            res.status(200).send({ success: true, message: `Successfully created all ${createdSpaces.length} spaces.` });
+        } else {
+            // Handle case where apiKeyData.rows[0] is undefined
+            res.sendStatus(404);
+        }
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
+});
 
 
 

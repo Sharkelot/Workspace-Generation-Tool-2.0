@@ -1,0 +1,11 @@
+//ClickUp API REST ENDPoints for FE
+###
+GET http://localhost:13000/clickup/spaces/30967133
+###
+POST http://localhost:13000/clickup/spaces
+Content-Type: application/json
+
+{
+    "wsid": "30967133"
+}
+###

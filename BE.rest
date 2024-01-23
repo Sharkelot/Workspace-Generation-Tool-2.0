@@ -6,8 +6,8 @@ POST http://localhost:13000/apikeys
 Content-Type: application/json
 
 {
-    "wsid": "Corey S",
-    "apikey": "Mothership"
+    "wsid": "30967133",
+    "apikey": "pk_43027688_HMRTF6SA49AHRV7VKIPT9Z6RE0B0BX3T"
 }
 ####
 GET  http://localhost:13000/apisetup
@@ -71,3 +71,4 @@ Content-Type: application/json
 ####
 GET  http://localhost:13000/taskidsetup
 ###
+GET http://localhost:13000/apikeys/30967133
